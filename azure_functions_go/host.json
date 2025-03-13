@@ -14,7 +14,7 @@
   },
   "customHandler": {
     "description": {
-      "defaultExecutablePath": "cmd/getRouteFunction",
+      "defaultExecutablePath": "cmd/safe_route",
       "workingDirectory": "",
       "arguments": []
     },
