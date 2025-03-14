@@ -1,6 +1,7 @@
 package main
 
 import (
+	"azure_functions_go/utils"
 	"log"
 	"net/http"
 	"os"
@@ -11,10 +12,10 @@ import (
 
 func getRouteHandler(c *gin.Context) {
 	name := c.DefaultQuery("name", "World")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Hello " + name,
-	})
-
+	data := map[string]interface{}{
+		"Greetings": "Hello " + name,
+	}
+	c.JSON(http.StatusOK, utils.Response(200, "Please hold while we process your safest route to your destination", data))
 }
 
 func main() {
