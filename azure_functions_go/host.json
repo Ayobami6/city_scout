@@ -14,7 +14,7 @@
   },
   "customHandler": {
     "description": {
-      "defaultExecutablePath": "cmd/safe_route",
+      "defaultExecutablePath": "handler",
       "workingDirectory": "",
       "arguments": []
     },
