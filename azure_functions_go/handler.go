@@ -18,6 +18,13 @@ func getRouteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response(200, "Please hold while we process your safest route to your destination", data))
 }
 
+func authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+	}
+
+}
+
 func main() {
 	//  create a new router
 	router := gin.Default()
