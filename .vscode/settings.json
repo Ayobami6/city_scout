@@ -2,5 +2,6 @@
     "azureFunctions.deploySubpath": "azure_functions_go",
     "azureFunctions.projectLanguage": "Custom",
     "azureFunctions.projectRuntime": "~4",
-    "debug.internalConsoleOptions": "neverOpen"
+    "debug.internalConsoleOptions": "neverOpen",
+    "makefile.configureOnOpen": false
 }
