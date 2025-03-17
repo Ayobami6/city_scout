@@ -36,6 +36,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 	api := router.Group("/api")
+	api.POST("/login", authservice.LoginHandler)
 
 	protected := api.Group("/")
 	protected.Use(authservice.AuthMiddleware())
