@@ -5,6 +5,8 @@ import (
 	"context"
 	"log"
 	"time"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
