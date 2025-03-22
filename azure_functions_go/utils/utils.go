@@ -1,5 +1,7 @@
 package utils
 
+import "os"
+
 func Response(statusCode int, message any, data any) map[string]any {
 	var status string
 	switch {
@@ -31,4 +33,12 @@ func Response(statusCode int, message any, data any) map[string]any {
 
 	return res
 
+}
+
+func GetEnv(key, fallback string) string {
+	// get value from env
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
