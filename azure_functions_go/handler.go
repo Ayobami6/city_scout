@@ -37,6 +37,23 @@ func searchRouteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response(200, "Route found", route))
 }
 
+func searchFastestRouteHandler(c *gin.Context) {
+	//  get query from request
+	origin := c.DefaultQuery("origin", "World")
+	destination := c.DefaultQuery("destination", "World")
+	//  get azure maps sdk
+	sdk := NewAzureMapsSDK(os.Getenv("AZURE_MAPS_API_KEY"))
+	//  search route
+	route, err := sdk.GetFastestRoute(origin, destination)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, utils.Response(500, "Failed to get route", nil))
+		return
+	}
+	//  return route
+	c.JSON(http.StatusOK, utils.Response(200, "Route found", route))
+}
+
 func main() {
 	//  create a new router
 	router := gin.Default()
@@ -56,6 +73,7 @@ func main() {
 	{
 		api.GET("/safe_route_function", getRouteHandler)
 		api.GET("/search_route", searchRouteHandler)
+		api.GET("/fastest_route", searchFastestRouteHandler)
 	}
 
 	log.Printf("Starting Gin-based Azure Function on port %s...\n", port)
@@ -103,6 +121,29 @@ func (sdk *AzureMapsSDK) SearchRoute(query string) (SearchResponse, error) {
 	return response, nil
 }
 
+func (sdk *AzureMapsSDK) GetFastestRoute(originLongAndlat, destinationLongAndLat string) (FastestRouteResponse, error) {
+
+	//  get fastest route from azure maps
+	endpoint := fmt.Sprintf("https://atlas.microsoft.com/route/directions/json?subscription-key=%s&api-version=1.0&query=%s:%s&computeBestOrder=true&travelMode=car&routeType=fastest", sdk.SubscriptionKey, originLongAndlat, destinationLongAndLat)
+	res, err := http.Get(endpoint)
+	if err != nil {
+		log.Println(err)
+		return FastestRouteResponse{}, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		log.Println(res.StatusCode)
+		return FastestRouteResponse{}, fmt.Errorf("failed to get fastest route from azure maps")
+	}
+	//  parse response
+	var response FastestRouteResponse
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		log.Println(err)
+		return FastestRouteResponse{}, err
+	}
+	return response, nil
+}
+
 type SearchResponse struct {
 	Results []Results `json:"results"`
 }
@@ -123,4 +164,29 @@ type Results struct {
 	ID       string   `json:"id"`
 	Position Position `json:"position"`
 	Poi      Poi      `json:"poi"`
+}
+
+type FastestRouteResponse struct {
+	Routes []Routes `json:"routes"`
+}
+type Summary struct {
+	LengthInMeters        int `json:"lengthInMeters"`
+	TravelTimeInSeconds   int `json:"travelTimeInSeconds"`
+	TrafficDelayInSeconds int `json:"trafficDelayInSeconds"`
+}
+type LegsSummary struct {
+	LengthInMeters      int `json:"lengthInMeters"`
+	TravelTimeInSeconds int `json:"travelTimeInSeconds"`
+}
+type Points struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+type Legs struct {
+	LegsSummary LegsSummary `json:"summary"`
+	Points      []Points    `json:"points"`
+}
+type Routes struct {
+	Summary Summary `json:"summary"`
+	Legs    []Legs  `json:"legs"`
 }
