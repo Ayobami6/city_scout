@@ -32,7 +32,7 @@ async def get_safe_route(query: Query):
             api_key=subscription_key,  
             api_version="2024-05-01-preview",
         )
-        with open("textfile.txt", "rb") as file:
+        with open("incident.json", "rb") as file:
             encoded_content = base64.b64encode(file.read()).decode("utf-8")
             
             
