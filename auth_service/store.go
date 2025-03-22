@@ -27,6 +27,11 @@ func (s *UserStore) GetUser(ctx context.Context, username string) (*User, error)
 	err := s.db.Collection("users").FindOne(ctx, bson.M{"username": username}).Decode(&user)
 	return &user, err
 }
+func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+	var user User
+	err := s.db.Collection("users").FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	return &user, err
+}
 
 func (s *UserStore) GetUserByAPIKey(ctx context.Context, apiKey string) (*User, error) {
 	var user User

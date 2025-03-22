@@ -29,6 +29,12 @@ func (c *UserController) registerHandler(ctx *gin.Context) {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+	// check if user exists
+	_, err := c.store.GetUserByEmail(ctx, payload.Email)
+	if err == nil {
+		ctx.JSON(400, gin.H{"error": "User already exists"})
+		return
+	}
 	ctxx := context.Background()
 	apiKey := GenerateAPIKey()
 	// create new user object from the payload
@@ -50,22 +56,18 @@ func (c *UserController) loginHandler(ctx *gin.Context) {
 	}
 	ctxx := context.Background()
 	// get the user from the database
-	user, err := c.store.GetUserByEmail(ctxx, payload.Email)
+	user, err := c.store.GetUser(ctxx, payload.Username)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	// check if the password is correct
-	if user.Password != payload.Password {
+	if ComparePassword(user.Password, payload.Password) == false {
 		ctx.JSON(401, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	// generate a jwt token
-	token, err := GenerateJWT(user.Email, user.ApiKey)
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-	// return the token
-	ctx.JSON(200, gin.H{"token": token})
+	apiKey := user.ApiKey
+
+	// return the api key
+	ctx.JSON(200, gin.H{"api_key": apiKey})
 }

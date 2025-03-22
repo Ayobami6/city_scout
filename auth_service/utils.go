@@ -1,6 +1,8 @@
 package authservice
 
 import (
+	"os"
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,4 +23,12 @@ func HashPassword(password string) (string, error) {
 func ComparePassword(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
+}
+
+func GetEnv(key, fallback string) string {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		value = fallback
+	}
+	return value
 }

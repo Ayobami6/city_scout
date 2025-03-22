@@ -23,7 +23,7 @@ func (s *APIServer) Start() error {
 	vi := router.Group("/api/v1")
 	mongoDb := s.dbClient.Database("authservice")
 	userStore := NewUserStore(mongoDb)
-
-	// set up gin router
-	return nil
+	controller := NewUserController(userStore)
+	controller.RegisterRoutes(vi)
+	return router.Run(s.addr)
 }
