@@ -13,7 +13,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func GetRouteHandler(c *gin.Context) {
+func getRouteHandler(c *gin.Context) {
 	name := c.DefaultQuery("name", "World")
 	data := map[string]interface{}{
 		"Greetings": "Hello " + name,
