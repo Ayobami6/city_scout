@@ -1,42 +1,31 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	authservice "auth_service"
-	handler "azure_functions_go"
+	"context"
+	"log"
+	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	//  create a new router
-	router := gin.Default()
-
-	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
-	if port == "" {
-		port = "4300"
+	addr := authservice.GetEnv("ADDR", "localhost:8181")
+	dbUrl := authservice.GetEnv("DB_URL", "mongodb://localhost:27017")
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	dbClient, err := authservice.ConnectDB(ctx, dbUrl)
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer func() {
+		if err := dbClient.Disconnect(ctx); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		AllowCredentials: true,
-	}))
-	api := router.Group("/api")
-	api.POST("/login", authservice.LoginHandler)
-
-	protected := api.Group("/")
-	protected.Use(authservice.AuthMiddleware())
-	{
-		protected.GET("/safe_route_function", handler.GetRouteHandler)
-	}
-
-	log.Printf("Starting Gin-based Azure Function on port %s...\n", port)
-	if err := router.Run(":" + port); err != nil {
+	api := authservice.NewAPIServer(addr, dbClient)
+	if err := api.Start(); err != nil {
 		log.Fatal(err)
 	}
 

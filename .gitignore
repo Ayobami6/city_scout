@@ -1,8 +1,8 @@
 node_modules
 venv/
+__pycache__/
 .venv/
-*.env
-*.ipynb
+.env
 *.json
 *.jsonl
-__pycache__/
+*.ipynb
