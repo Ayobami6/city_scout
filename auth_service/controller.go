@@ -37,8 +37,16 @@ func (c *UserController) registerHandler(ctx *gin.Context) {
 	}
 	ctxx := context.Background()
 	apiKey := GenerateAPIKey()
-	// create new user object from the payload
-	user := NewUser(payload.Username, payload.Password, payload.Email, apiKey)
+
+	// Hash the password
+	hashedPassword, err := HashPassword(payload.Password)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	// create new user object from the payload with hashed password
+	user := NewUser(payload.Username, hashedPassword, payload.Email, apiKey)
 	if err := c.store.CreateUser(ctxx, user); err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return

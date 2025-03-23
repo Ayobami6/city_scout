@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"azure_functions_go/utils"
@@ -8,12 +8,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func getRouteHandler(c *gin.Context) {
+func GetRouteHandler(c *gin.Context) {
 	name := c.DefaultQuery("name", "World")
 	data := map[string]interface{}{
 		"Greetings": "Hello " + name,
@@ -21,7 +20,7 @@ func getRouteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response(200, "Please hold while we process your safest route to your destination", data))
 }
 
-func searchRouteHandler(c *gin.Context) {
+func SearchRouteHandler(c *gin.Context) {
 	//  get query from request
 	query := c.DefaultQuery("query", "World")
 	//  get azure maps sdk
@@ -37,7 +36,7 @@ func searchRouteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response(200, "Route found", route))
 }
 
-func searchFastestRouteHandler(c *gin.Context) {
+func SearchFastestRouteHandler(c *gin.Context) {
 	//  get query from request
 	origin := c.DefaultQuery("origin", "World")
 	destination := c.DefaultQuery("destination", "World")
@@ -52,35 +51,6 @@ func searchFastestRouteHandler(c *gin.Context) {
 	}
 	//  return route
 	c.JSON(http.StatusOK, utils.Response(200, "Route found", route))
-}
-
-func main() {
-	//  create a new router
-	router := gin.Default()
-
-	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
-	if port == "" {
-		port = "4670"
-	}
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		AllowCredentials: true,
-	}))
-	api := router.Group("/api")
-	{
-		api.GET("/safe_route_function", getRouteHandler)
-		api.GET("/search_route", searchRouteHandler)
-		api.GET("/fastest_route", searchFastestRouteHandler)
-	}
-
-	log.Printf("Starting Gin-based Azure Function on port %s...\n", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 type AzureMapsSDK struct {
