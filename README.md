@@ -3,3 +3,7 @@
 ### Tools
 - Azure Functions
 - Azure maps
+- HuggingFace
+- Go
+- FastAPI
+
